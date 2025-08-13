@@ -1,0 +1,49 @@
+package com.onlinebookstore.inventoryservice.controller;
+
+import com.onlinebookstore.inventoryservice.client.BookClient;
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import com.onlinebookstore.inventoryservice.repository.InventoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/inventory")
+public class InventoryController {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Autowired
+    private BookClient bookClient;
+
+    @GetMapping
+    public List<Inventory> getAllInventory() {
+        return inventoryRepository.findAll();
+    }
+
+    @PostMapping("/add")
+    public Inventory addInventory(@RequestParam Long bookId, @RequestParam int quantity) {
+        // Check if book exists
+        var book = bookClient.getBookById(bookId);
+
+        Inventory inventory = new Inventory();
+        inventory.setBookId(bookId);
+        inventory.setQuantity(quantity);
+
+        return inventoryRepository.save(inventory);
+    }
+
+    @PutMapping("/reduce/{bookId}")
+    public String reduceStock(@PathVariable Long bookId, @RequestParam int quantity) {
+        Inventory inventory = inventoryRepository.findByBookId(bookId);
+        if (inventory != null && inventory.getQuantity() >= quantity) {
+            inventory.setQuantity(inventory.getQuantity() - quantity);
+            inventoryRepository.save(inventory);
+            return "Stock updated successfully!";
+        } else {
+            return "Insufficient stock!";
+        }
+    }
+}

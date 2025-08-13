@@ -1,0 +1,21 @@
+spring.application.name=api-gateway
+server.port=8080
+
+# Force Reactive Mode
+spring.main.web-application-type=reactive
+
+# Eureka Client Config
+eureka.client.service-url.defaultZone=http://localhost:8761/eureka/
+eureka.instance.prefer-ip-address=true
+
+# New Gateway Configuration Keys
+spring.cloud.gateway.server.webflux.routes[0].id=BOOK-SERVICE
+spring.cloud.gateway.server.webflux.routes[0].uri=lb://BOOK-SERVICE
+spring.cloud.gateway.server.webflux.routes[0].predicates[0]=Path=/books/**
+
+spring.cloud.gateway.server.webflux.routes[1].id=ORDER-SERVICE
+spring.cloud.gateway.server.webflux.routes[1].uri=lb://ORDER-SERVICE
+spring.cloud.gateway.server.webflux.routes[1].predicates[0]=Path=/orders/**
+
+# Actuator Endpoint
+management.endpoints.web.exposure.include=*

@@ -1,0 +1,8 @@
+package com.onlinebookstore.inventoryservice.repository;
+
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface InventoryRepository extends JpaRepository<Inventory, Long> {
+    Inventory findByBookId(Long bookId);
+}

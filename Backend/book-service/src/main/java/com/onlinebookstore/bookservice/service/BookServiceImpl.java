@@ -1,0 +1,27 @@
+package com.onlinebookstore.bookservice.service;
+
+import com.onlinebookstore.bookservice.exception.BookNotFoundException;
+import com.onlinebookstore.bookservice.model.Book;
+import com.onlinebookstore.bookservice.repository.BookRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class BookServiceImpl implements BookService {
+
+    @Autowired
+    private BookRepository bookRepository;
+
+    @Override
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id " + id));
+    }
+
+    @Override
+    public List<Book> getAllBooks() {
+        return bookRepository.findAll();
+    }
+}

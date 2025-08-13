@@ -1,0 +1,116 @@
+package com.onlinebookstore.orderservice.controller;
+
+import com.onlinebookstore.orderservice.client.BookClient;
+import com.onlinebookstore.orderservice.client.UserClient;
+import com.onlinebookstore.orderservice.client.InventoryClient;
+import com.onlinebookstore.orderservice.dto.OrderRequest;
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private BookClient bookClient;
+
+    @Autowired
+    private UserClient userClient;
+
+    @Autowired
+    private InventoryClient inventoryClient;
+
+    @GetMapping
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    @PostMapping
+    public Order placeOrder(@RequestBody OrderRequest orderRequest) {
+        Long userId = orderRequest.getUserId();
+        Long bookId = orderRequest.getBookId();
+        int quantity = orderRequest.getQuantity();
+
+        var user = userClient.getUserById(userId);
+        var book = bookClient.getBookById(bookId);
+
+        // Reduce stock in Inventory
+        inventoryClient.reduceStock(bookId, quantity);
+
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setBookId(bookId);
+        order.setQuantity(quantity);
+        order.setTotalPrice(book.getPrice() * quantity);
+        order.setOrderDate(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+
+    // Update an existing order
+    @PutMapping("/{orderId}")
+    public Order updateOrder(@PathVariable Long orderId, @RequestBody OrderRequest orderRequest) {
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+        if (!optionalOrder.isPresent()) {
+            throw new RuntimeException("Order not found with id " + orderId);
+        }
+
+        Order order = optionalOrder.get();
+
+        Long newUserId = orderRequest.getUserId();
+        Long newBookId = orderRequest.getBookId();
+        int newQuantity = orderRequest.getQuantity();
+
+        var user = userClient.getUserById(newUserId);
+        var book = bookClient.getBookById(newBookId);
+
+        // If quantity or book changed, adjust inventory accordingly (simplified)
+        // For now, just assume stock reduced by new quantity
+        inventoryClient.reduceStock(newBookId, newQuantity);
+
+        order.setUserId(newUserId);
+        order.setBookId(newBookId);
+        order.setQuantity(newQuantity);
+        order.setTotalPrice(book.getPrice() * newQuantity);
+        order.setOrderDate(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Order> updateOrder(@PathVariable Long id,
+                                             @RequestBody Order updatedOrder) {
+        Optional<Order> existingOrderOptional = orderRepository.findById(id);
+        if (!existingOrderOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Order existingOrder = existingOrderOptional.get();
+        existingOrder.setUserId(updatedOrder.getUserId());
+        existingOrder.setBookId(updatedOrder.getBookId());
+        existingOrder.setQuantity(updatedOrder.getQuantity());
+        existingOrder.setOrderDate(LocalDateTime.now()); // Or keep previous order date if you want
+
+        orderRepository.save(existingOrder);
+        return ResponseEntity.ok(existingOrder);
+    }
+
+
+    // Delete an order by ID
+    @DeleteMapping("/{orderId}")
+    public String deleteOrder(@PathVariable Long orderId) {
+        if (!orderRepository.existsById(orderId)) {
+            throw new RuntimeException("Order not found with id " + orderId);
+        }
+        orderRepository.deleteById(orderId);
+        return "Order with id " + orderId + " deleted successfully";
+    }
+}

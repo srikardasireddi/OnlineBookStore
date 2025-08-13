@@ -1,0 +1,3 @@
+com/onlinebookstore/inventoryservice/
+│               ├── model/InventoryTest.java  ✅ (model class test)
+│               ├── service/InventoryServiceTest.java  ✅ (service layer test)

@@ -1,0 +1,50 @@
+package com.onlinebookstore.inventoryservice.service;
+
+import com.onlinebookstore.inventoryservice.model.Inventory;
+
+import com.onlinebookstore.inventoryservice.repository.InventoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import com.onlinebookstore.inventoryservice.exception.InventoryNotFoundException;
+
+@Service
+public class InventoryServiceImpl implements InventoryService {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Override
+    public void reduceStock(Long bookId, int quantity) {
+        Inventory inventory = inventoryRepository.findByBookId(bookId)
+            .orElseThrow(() -> new RuntimeException("Inventory not found for bookId: " + bookId));
+        if (inventory.getStock() < quantity) {
+            throw new RuntimeException("Insufficient stock for bookId: " + bookId);
+        }
+        inventory.setStock(inventory.getStock() - quantity);
+        inventoryRepository.save(inventory);
+    }
+
+    @Override
+    public List<Inventory> getAllInventory() {
+        return inventoryRepository.findAll();
+    }
+    
+    @Override
+    public Inventory addInventory(Inventory inventory) {
+        return inventoryRepository.save(inventory);
+    }
+
+    @Override
+    public Inventory getInventoryById(Long id) {
+        return inventoryRepository.findById(id)
+            .orElseThrow(() -> new InventoryNotFoundException("Inventory not found for id: " + id));
+    }
+
+    @Override
+    public Inventory getInventoryByBookId(Long bookId) {
+        return inventoryRepository.findByBookId(bookId)
+            .orElseThrow(() -> new RuntimeException("Inventory not found for bookId: " + bookId));
+    }
+}

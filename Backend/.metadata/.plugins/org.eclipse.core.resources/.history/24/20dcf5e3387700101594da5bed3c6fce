@@ -1,0 +1,11 @@
+package com.onlinebookstore.inventoryservice;
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import java.util.List;
+
+public interface InventoryService {
+    // existing methods...
+    
+    List<Inventory> getAllInventory();
+
+    Inventory getInventoryByBookId(Long bookId);
+}

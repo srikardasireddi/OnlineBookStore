@@ -1,0 +1,17 @@
+
+
+public class Snippet {
+	@Autowired
+	private InventoryClient inventoryClient;
+	
+	public Order createOrder(Order order) {
+	    // save order
+	    Order savedOrder = orderRepository.save(order);
+	
+	    // reduce stock in inventory
+	    inventoryClient.reduceStock(order.getBookId(), order.getQuantity());
+	
+	    return savedOrder;
+	}
+	
+}

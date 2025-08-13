@@ -1,0 +1,57 @@
+package com.onlinebookstore.bookservice.service;
+
+import com.onlinebookstore.bookservice.exception.BookNotFoundException;
+import com.onlinebookstore.bookservice.model.Book;
+import com.onlinebookstore.bookservice.repository.BookRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class BookServiceTest {
+
+    @Mock
+    private BookRepository bookRepository;
+
+    @InjectMocks
+    private BookService bookService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this); // Initialize mocks
+    }
+
+    @Test
+    void testGetBookById_Found() {
+        // Arrange
+        Book mockBook = new Book();
+        mockBook.setId(1L);
+        mockBook.setTitle("Java Basics");
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(mockBook));
+
+        // Act
+        Book book = bookService.getBookById(1L);
+
+        // Assert
+        assertNotNull(book);
+        assertEquals("Java Basics", book.getTitle());
+        verify(bookRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetBookById_NotFound() {
+        // Arrange
+        when(bookRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(BookNotFoundException.class, () -> bookService.getBookById(99L));
+        verify(bookRepository, times(1)).findById(99L);
+    }
+}

@@ -1,0 +1,162 @@
+package com.onlinebookstore.orderservice.service;
+
+import com.onlinebookstore.orderservice.client.BookClient;
+import com.onlinebookstore.orderservice.client.InventoryClient;
+import com.onlinebookstore.orderservice.client.UserClient;
+import com.onlinebookstore.orderservice.dto.BookDTO;
+import com.onlinebookstore.orderservice.dto.OrderRequest;
+import com.onlinebookstore.orderservice.dto.UserDTO;
+import com.onlinebookstore.orderservice.exception.BookNotFoundException;
+import com.onlinebookstore.orderservice.exception.InsufficientStockException;
+import com.onlinebookstore.orderservice.exception.OrderNotFoundException;
+import com.onlinebookstore.orderservice.exception.UserNotFoundException;
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.repository.OrderRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class OrderServiceTest {
+
+    @Mock
+    private OrderRepository orderRepository;
+
+    @Mock
+    private UserClient userClient;
+
+    @Mock
+    private BookClient bookClient;
+
+    @Mock
+    private InventoryClient inventoryClient;
+
+    @InjectMocks
+    private OrderService orderService;
+
+    private Order order;
+    private OrderRequest orderRequest;
+    private BookDTO book;
+    private UserDTO user;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        order = new Order();
+        order.setId(1L);
+        order.setUserId(1L);
+        order.setBookId(2L);
+        order.setQuantity(3);
+        order.setTotalPrice(300.0);
+        order.setOrderDate(LocalDateTime.now());
+
+        orderRequest = new OrderRequest();
+        orderRequest.setUserId(1L);
+        orderRequest.setBookId(2L);
+        orderRequest.setQuantity(3);
+
+        book = new BookDTO();
+        book.setId(2L);
+        book.setPrice(100.0);
+
+        user = new UserDTO();
+        user.setId(1L);
+        user.setName("John Doe");
+    }
+
+    @Test
+    void testGetAllOrders() {
+        when(orderRepository.findAll()).thenReturn(Arrays.asList(order));
+
+        var orders = orderService.getAllOrders();
+        assertEquals(1, orders.size());
+        verify(orderRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testGetOrderById_Found() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+
+        var result = orderService.getOrderById(1L);
+        assertEquals(1L, result.getId());
+    }
+
+    @Test
+    void testGetOrderById_NotFound() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(OrderNotFoundException.class, () -> orderService.getOrderById(1L));
+    }
+
+    @Test
+    void testPlaceOrder_Success() {
+        when(userClient.getUserById(1L)).thenReturn(user);
+        when(bookClient.getBookById(2L)).thenReturn(book);
+        when(inventoryClient.getStock(2L)).thenReturn(5);
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+
+        var savedOrder = orderService.placeOrder(orderRequest);
+        assertNotNull(savedOrder);
+        assertEquals(1L, savedOrder.getId());
+    }
+
+    @Test
+    void testPlaceOrder_UserNotFound() {
+        when(userClient.getUserById(1L)).thenReturn(null);
+        assertThrows(UserNotFoundException.class, () -> orderService.placeOrder(orderRequest));
+    }
+
+    @Test
+    void testPlaceOrder_BookNotFound() {
+        when(userClient.getUserById(1L)).thenReturn(user);
+        when(bookClient.getBookById(2L)).thenReturn(null);
+        assertThrows(BookNotFoundException.class, () -> orderService.placeOrder(orderRequest));
+    }
+
+    @Test
+    void testPlaceOrder_InsufficientStock() {
+        when(userClient.getUserById(1L)).thenReturn(user);
+        when(bookClient.getBookById(2L)).thenReturn(book);
+        when(inventoryClient.getStock(2L)).thenReturn(1);
+        assertThrows(InsufficientStockException.class, () -> orderService.placeOrder(orderRequest));
+    }
+
+    @Test
+    void testUpdateOrder_Success() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.of(order));
+        when(userClient.getUserById(1L)).thenReturn(user);
+        when(bookClient.getBookById(2L)).thenReturn(book);
+        when(inventoryClient.getStock(2L)).thenReturn(5);
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+
+        var updatedOrder = orderService.updateOrder(1L, orderRequest);
+        assertNotNull(updatedOrder);
+    }
+
+    @Test
+    void testUpdateOrder_NotFound() {
+        when(orderRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(OrderNotFoundException.class, () -> orderService.updateOrder(1L, orderRequest));
+    }
+
+    @Test
+    void testDeleteOrder_Success() {
+        when(orderRepository.existsById(1L)).thenReturn(true);
+        orderService.deleteOrder(1L);
+        verify(orderRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void testDeleteOrder_NotFound() {
+        when(orderRepository.existsById(1L)).thenReturn(false);
+        assertThrows(OrderNotFoundException.class, () -> orderService.deleteOrder(1L));
+    }
+}

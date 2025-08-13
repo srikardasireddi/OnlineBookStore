@@ -1,0 +1,26 @@
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import com.onlinebookstore.inventoryservice.repository.InventoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class InventoryServiceImpl implements InventoryService {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    // existing methods...
+
+    @Override
+    public List<Inventory> getAllInventory() {
+        return inventoryRepository.findAll();
+    }
+
+    @Override
+    public Inventory getInventoryByBookId(Long bookId) {
+        return inventoryRepository.findByBookId(bookId)
+            .orElseThrow(() -> new RuntimeException("Inventory not found for bookId: " + bookId));
+    }
+}

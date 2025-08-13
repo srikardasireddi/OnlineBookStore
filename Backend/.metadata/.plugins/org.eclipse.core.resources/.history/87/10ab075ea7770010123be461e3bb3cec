@@ -1,0 +1,19 @@
+package com.onlinebookstore.orderservice.controller;
+
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.service.OrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/orders")
+public class OrderController {
+
+    @Autowired
+    private OrderService orderService;
+
+    @GetMapping("/{id}")
+    public Order getOrderById(@PathVariable Long id) {
+        return orderService.getOrderById(id);
+    }
+}

@@ -1,0 +1,21 @@
+package com.onlinebookstore.inventoryservice.service;
+
+import com.onlinebookstore.inventoryservice.exception.InventoryNotFoundException;
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import com.onlinebookstore.inventoryservice.repository.InventoryRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class InventoryService {
+
+    private final InventoryRepository inventoryRepository;
+
+    public InventoryService(InventoryRepository inventoryRepository) {
+        this.inventoryRepository = inventoryRepository;
+    }
+
+    public Inventory getInventoryById(Long id) {
+        return inventoryRepository.findById(id)
+                .orElseThrow(() -> new InventoryNotFoundException("Inventory not found with id: " + id));
+    }
+}

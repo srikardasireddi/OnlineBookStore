@@ -1,0 +1,26 @@
+package snippet;
+
+public class Snippet {
+	// In OrderController or OrderService, when fetching order:
+	Order order = orderRepository.findById(orderId)
+	    .orElseThrow(() -> new OrderNotFoundException(orderId));
+	
+	// When calling userClient or bookClient, check for null or errors and throw custom exceptions if needed
+	var user = userClient.getUserById(userId);
+	if (user == null) {
+	    throw new UserNotFoundException(userId);
+	}
+	
+	var book = bookClient.getBookById(bookId);
+	if (book == null) {
+	    throw new BookNotFoundException(bookId);
+	}
+	
+	// When checking inventory:
+	int availableStock = inventoryClient.getStock(bookId);
+	if (availableStock < quantity) {
+	    throw new InsufficientStockException(bookId);
+	}
+	
+}
+

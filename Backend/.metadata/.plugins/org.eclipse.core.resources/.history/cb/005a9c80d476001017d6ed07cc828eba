@@ -1,0 +1,25 @@
+package com.onlinebookstore.inventoryservice.service;
+
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import com.onlinebookstore.inventoryservice.repository.InventoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class InventoryService {
+
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    public void reduceStock(Long bookId, int quantity) {
+        Inventory inventory = inventoryRepository.findByBookId(bookId)
+                .orElseThrow(() -> new RuntimeException("Book not found in inventory"));
+
+        if (inventory.getQuantity() < quantity) {
+            throw new RuntimeException("Not enough stock available");
+        }
+
+        inventory.setQuantity(inventory.getQuantity() - quantity);
+        inventoryRepository.save(inventory);
+    }
+}

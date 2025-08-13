@@ -1,0 +1,116 @@
+package com.onlinebookstore.orderservice.service;
+
+import com.onlinebookstore.orderservice.client.BookClient;
+import com.onlinebookstore.orderservice.client.InventoryClient;
+import com.onlinebookstore.orderservice.client.UserClient;
+import com.onlinebookstore.orderservice.dto.OrderRequest;
+import com.onlinebookstore.orderservice.exception.BookNotFoundException;
+import com.onlinebookstore.orderservice.exception.InsufficientStockException;
+import com.onlinebookstore.orderservice.exception.OrderNotFoundException;
+import com.onlinebookstore.orderservice.exception.UserNotFoundException;
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.repository.OrderRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class OrderService {
+
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private UserClient userClient;
+
+    @Autowired
+    private BookClient bookClient;
+
+    @Autowired
+    private InventoryClient inventoryClient;
+
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+    }
+
+    public Order placeOrder(OrderRequest orderRequest) {
+        Long userId = orderRequest.getUserId();
+        Long bookId = orderRequest.getBookId();
+        int quantity = orderRequest.getQuantity();
+
+        var user = userClient.getUserById(userId);
+        if (user == null) {
+            throw new UserNotFoundException(userId);
+        }
+
+        var book = bookClient.getBookById(bookId);
+        if (book == null) {
+            throw new BookNotFoundException(bookId);
+        }
+
+        int availableStock = inventoryClient.getStock(bookId);
+        if (availableStock < quantity) {
+            throw new InsufficientStockException(bookId);
+        }
+
+        inventoryClient.reduceStock(bookId, quantity);
+
+        Order order = new Order();
+        order.setUserId(userId);
+        order.setBookId(bookId);
+        order.setQuantity(quantity);
+        order.setTotalPrice(book.getPrice() * quantity);
+        order.setOrderDate(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+
+    public Order updateOrder(Long orderId, OrderRequest orderRequest) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        Long newUserId = orderRequest.getUserId();
+        Long newBookId = orderRequest.getBookId();
+        int newQuantity = orderRequest.getQuantity();
+
+        var user = userClient.getUserById(newUserId);
+        if (user == null) {
+            throw new UserNotFoundException(newUserId);
+        }
+
+        var book = bookClient.getBookById(newBookId);
+        if (book == null) {
+            throw new BookNotFoundException(newBookId);
+        }
+
+        int availableStock = inventoryClient.getStock(newBookId);
+        if (availableStock < newQuantity) {
+            throw new InsufficientStockException(newBookId);
+        }
+
+        // For simplicity, reducing stock by newQuantity (consider better inventory update logic)
+        inventoryClient.reduceStock(newBookId, newQuantity);
+
+        order.setUserId(newUserId);
+        order.setBookId(newBookId);
+        order.setQuantity(newQuantity);
+        order.setTotalPrice(book.getPrice() * newQuantity);
+        order.setOrderDate(LocalDateTime.now());
+
+        return orderRepository.save(order);
+    }
+
+    public void deleteOrder(Long orderId) {
+        if (!orderRepository.existsById(orderId)) {
+            throw new OrderNotFoundException(orderId);
+        }
+        orderRepository.deleteById(orderId);
+    }
+}

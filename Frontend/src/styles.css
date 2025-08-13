@@ -1,0 +1,13 @@
+body { font-family: 'Inter', sans-serif; background: #F8F7F4; color: #333; margin:0; }
+.navbar { display:flex; justify-content:space-between; padding:1rem; background:#1A237E; color:#fff; }
+.nav-links li { display:inline; margin-left:1rem; }
+.nav-links li a { color:#FFB300; text-decoration:none; }
+.hero img { width:100%; height:auto; margin-top:1rem; border-radius:10px; }
+.book-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin:1rem 0; }
+.book-card { background:#fff; padding:1rem; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); text-align:center; }
+.book-card button { background:#FFB300; border:none; padding:0.5rem 1rem; cursor:pointer; border-radius:5px; margin-top:0.5rem; }
+.book-card button:hover { background:#FFA000; }
+table { width:100%; border-collapse:collapse; margin-top:1rem; }
+th, td { padding:0.5rem; border:1px solid #ddd; text-align:left; }
+button { cursor:pointer; }
+.footer { text-align:center; padding:1rem; background:#1A237E; color:#fff; margin-top:2rem; }

@@ -1,0 +1,9 @@
+package snippet;
+
+public class Snippet {
+	src/main/java/com/onlinebookstore/bookservice/config/WebConfig.java
+	src/main/java/com/onlinebookstore/userservice/config/WebConfig.java
+	src/main/java/com/onlinebookstore/orderservice/config/WebConfig.java
+	
+}
+

@@ -1,0 +1,31 @@
+package com.onlinebookstore.inventoryservice.controller;
+
+import com.onlinebookstore.inventoryservice.model.Inventory;
+import com.onlinebookstore.inventoryservice.service.InventoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/inventory")
+public class InventoryController {
+
+    @Autowired
+    private InventoryService inventoryService;
+
+    @PostMapping("/reduce")
+    public void reduceStock(@RequestParam Long bookId, @RequestParam int quantity) {
+        inventoryService.reduceStock(bookId, quantity);
+    }
+
+    @GetMapping
+    public List<Inventory> getAllInventory() {
+        return inventoryService.getAllInventory();
+    }
+
+    @GetMapping("/{bookId}")
+    public Inventory getInventoryByBookId(@PathVariable Long bookId) {
+        return inventoryService.getInventoryByBookId(bookId);
+    }
+}

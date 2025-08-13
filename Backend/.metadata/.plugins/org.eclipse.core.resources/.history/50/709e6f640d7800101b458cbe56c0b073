@@ -1,0 +1,7 @@
+package com.onlinebookstore.bookservice.service;
+
+import com.onlinebookstore.bookservice.model.Book;
+
+public interface BookService {
+    Book getBookById(Long id);
+}

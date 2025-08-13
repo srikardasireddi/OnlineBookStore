@@ -1,0 +1,21 @@
+package com.onlinebookstore.bookservice.service;
+
+import com.onlinebookstore.bookservice.exception.BookNotFoundException;
+import com.onlinebookstore.bookservice.model.Book;
+import com.onlinebookstore.bookservice.repository.BookRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class BookService {
+
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
+
+    public Book getBookById(Long id) {
+        return bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException("Book not found with id: " + id));
+    }
+}

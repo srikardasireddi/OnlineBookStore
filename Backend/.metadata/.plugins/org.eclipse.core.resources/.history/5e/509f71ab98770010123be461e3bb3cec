@@ -1,0 +1,20 @@
+package com.onlinebookstore.orderservice.service;
+
+import com.onlinebookstore.orderservice.exception.OrderNotFoundException;
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.repository.OrderRepository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class OrderService {
+    private final OrderRepository orderRepository;
+
+    public OrderService(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
+    public Order getOrderById(Long id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+    }
+}

@@ -1,0 +1,50 @@
+package com.onlinebookstore.orderservice.controller;
+
+import com.onlinebookstore.orderservice.model.Order;
+import com.onlinebookstore.orderservice.service.OrderService;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.time.LocalDateTime;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(OrderController.class)
+class OrderControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private OrderService orderService;
+
+    @Test
+    void testGetOrderById() throws Exception {
+        Order order = new Order();
+        order.setId(1L);
+        order.setUserId(100L);
+        order.setBookId(200L);
+        order.setQuantity(2);
+        order.setTotalPrice(59.98);
+        order.setOrderDate(LocalDateTime.of(2025, 8, 12, 10, 30));
+        order.setStatus("CONFIRMED");
+
+        when(orderService.getOrderById(1L)).thenReturn(order);
+
+        mockMvc.perform(get("/orders/1")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value(100))
+                .andExpect(jsonPath("$.bookId").value(200))
+                .andExpect(jsonPath("$.quantity").value(2))
+                .andExpect(jsonPath("$.totalPrice").value(59.98))
+                .andExpect(jsonPath("$.status").value("CONFIRMED"));
+    }
+}

@@ -1,0 +1,9 @@
+spring.application.name=config-server
+server.port=8888
+
+spring.cloud.config.server.git.uri=https://github.com/<your-username>/online-bookstore-config
+spring.cloud.config.server.git.default-label=main
+
+# If repo is private
+# spring.cloud.config.server.git.username=<your-username>
+# spring.cloud.config.server.git.password=<your-personal-access-token>

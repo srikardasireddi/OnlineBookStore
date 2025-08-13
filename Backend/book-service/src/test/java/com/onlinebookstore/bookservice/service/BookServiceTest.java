@@ -1,0 +1,51 @@
+package com.onlinebookstore.bookservice.service;
+
+import com.onlinebookstore.bookservice.exception.BookNotFoundException;
+import com.onlinebookstore.bookservice.model.Book;
+import com.onlinebookstore.bookservice.repository.BookRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class BookServiceTest {
+
+    @Mock
+    private BookRepository bookRepository;
+
+    @InjectMocks
+    private BookServiceImpl bookService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetBookById_Found() {
+        Book book = new Book();
+        book.setId(1L);
+        book.setTitle("Spring Boot in Action");
+        book.setAuthor("Craig Walls");
+        book.setPrice(29.99);
+
+        when(bookRepository.findById(1L)).thenReturn(Optional.of(book));
+
+        Book result = bookService.getBookById(1L);
+
+        assertEquals("Spring Boot in Action", result.getTitle());
+        verify(bookRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void testGetBookById_NotFound() {
+        when(bookRepository.findById(1L)).thenReturn(Optional.empty());
+        assertThrows(BookNotFoundException.class, () -> bookService.getBookById(1L));
+    }
+}

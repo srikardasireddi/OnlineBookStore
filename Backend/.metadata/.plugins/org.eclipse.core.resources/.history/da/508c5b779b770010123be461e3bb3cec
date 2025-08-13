@@ -1,0 +1,31 @@
+package com.onlinebookstore.inventoryservice.model;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class InventoryTest {
+
+    @Test
+    void testDefaultConstructorAndSetters() {
+        Inventory inventory = new Inventory();
+        inventory.setId(1L);
+        inventory.setBookId(101L);
+        inventory.setStock(50);
+        inventory.setQuantity(10);
+
+        assertEquals(1L, inventory.getId());
+        assertEquals(101L, inventory.getBookId());
+        assertEquals(50, inventory.getStock());
+        assertEquals(10, inventory.getQuantity());
+    }
+
+    @Test
+    void testParameterizedConstructor() {
+        Inventory inventory = new Inventory(1L, 101L, 50);
+
+        assertEquals(1L, inventory.getId());
+        assertEquals(101L, inventory.getBookId());
+        assertEquals(50, inventory.getStock());
+        assertEquals(0, inventory.getQuantity()); // default int value
+    }
+}
