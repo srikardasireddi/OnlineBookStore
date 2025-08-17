@@ -1,0 +1,29 @@
+# Ignore Eclipse/IDE files
+.metadata/
+.classpath
+.project
+.settings/
+bin/
+.apt_generated/
+.factorypath
+.target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# SonarLint
+.sonarlint/
+
+# Logs
+*.log
+
+# Build directories
+target/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db

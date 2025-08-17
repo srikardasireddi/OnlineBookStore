@@ -1,0 +1,115 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  eureka-server:
+    build:
+      context: ./Backend/eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    # Removed healthcheck to avoid blocking startup
+
+  config-server:
+    build:
+      context: ./Backend/config-server
+      dockerfile: Dockerfile
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    depends_on:
+      - eureka-server
+
+  api-gateway:
+    build:
+      context: ./Backend/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-server
+      - config-server
+
+  book-service:
+    build:
+      context: ./Backend/book-service
+      dockerfile: Dockerfile
+    container_name: book-service
+    depends_on:
+      - mysql
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/bookdb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8082:8082"
+
+  user-service:
+    build:
+      context: ./Backend/user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    depends_on:
+      - mysql
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/userdb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8081:8081"
+
+  order-service:
+    build:
+      context: ./Backend/order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    depends_on:
+      - mysql
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/orderdb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8083:8083"
+
+  inventory-service:
+    build:
+      context: ./Backend/inventory-service
+      dockerfile: Dockerfile
+    container_name: inventory-service
+    depends_on:
+      - mysql
+      - eureka-server
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/inventorydb?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8084:8084"
+
+volumes:
+  mysql_data:
